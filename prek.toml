@@ -25,7 +25,7 @@ repo = "local"
 id = "gnatformat"
 name = "gnatformat"
 language = "system"
-entry = "sh -c 'cd tests && alr -q exec -- gnatformat -P ../template.gpr && alr -q exec -- gnatformat --no-subprojects -P template_tests.gpr'"
+entry = "sh -c 'alr -n -q build --stop-after=generation && cd tests && alr -n -q build --stop-after=generation && alr -q exec -- gnatformat -P ../template.gpr && alr -q exec -- gnatformat --no-subprojects -P template_tests.gpr'"
 files = '\.(ads|adb|gpr)$'
 pass_filenames = false
 stages = ["pre-commit"]
