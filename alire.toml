@@ -1,0 +1,29 @@
+name = "template"
+description = "Minimal Ada template"
+version = "0.1.0-dev"
+
+authors = ["Napolitain"]
+maintainers-logins = ["Napolitain"]
+licenses = "MIT"
+website = "https://github.com/Napolitain/template-ada"
+tags = []
+
+executables = ["template"]
+
+[[actions]]
+type = "test"
+directory = "tests"
+command = ["alr", "run"]
+
+[build-switches]
+"*".ada_version = "Ada2022"
+development.compile_checks = "errors"
+development.optimization = ["-Og", "-march=native"]
+validation.optimization = ["-O2", "-march=native"]
+release.optimization = ["-O3", "-march=native", "-flto=auto"]
+# Alire's default style checks, with 4-space indentation and 100-column lines.
+"*".style_checks = [
+    "-gnaty4", "-gnatya", "-gnatyA", "-gnatyB", "-gnatyb", "-gnatyc", "-gnaty-d", "-gnatye",
+    "-gnatyf", "-gnatyh", "-gnatyi", "-gnatyI", "-gnatyk", "-gnatyl", "-gnatyM100", "-gnatyn",
+    "-gnatyO", "-gnatyp", "-gnatyr", "-gnatyS", "-gnatyt", "-gnatyu", "-gnatyx",
+]

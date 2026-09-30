@@ -1,0 +1,29 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+jobs:
+    ci:
+        runs-on: ubuntu-26.04
+        steps:
+            - uses: actions/checkout@v7.0.1
+
+            - uses: alire-project/setup-alire@v6.0.0
+              with:
+                  version: 2.1.1
+                  toolchain: gnat_native=16.1.0 gprbuild=26.0.1
+
+            - name: Hooks (pre-commit)
+              uses: j178/prek-action@v3.0.0
+
+            - name: Hooks (pre-push)
+              run: prek run --show-diff-on-failure --all-files --hook-stage pre-push
+
+            - name: Coverage
+              run: tests/coverage.sh
+
+            - name: Release build
+              run: alr -n build --release

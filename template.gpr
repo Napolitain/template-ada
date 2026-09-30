@@ -1,0 +1,35 @@
+with "config/template_config.gpr";
+project Template is
+
+    for Source_Dirs use ("src/", "config/");
+    for Object_Dir use "obj/" & Template_Config.Build_Profile;
+    for Create_Missing_Dirs use "True";
+    for Exec_Dir use "bin";
+    for Main use ("template.adb");
+
+    package Compiler is
+        for Default_Switches ("Ada") use Template_Config.Ada_Compiler_Switches;
+    end Compiler;
+
+    package Binder is
+        for Switches ("Ada") use ("-Es"); --  Symbolic traceback
+    end Binder;
+
+    package Linker is
+        case Template_Config.Build_Profile is
+            when "release" => for Switches ("Ada") use ("-flto=auto", "-s");
+            when others => null;
+        end case;
+    end Linker;
+
+    package Format is
+        for Width ("Ada") use "100";
+        for Indentation ("Ada") use "4";
+        for Indentation_Continuation ("Ada") use "4";
+    end Format;
+
+    package Install is
+        for Artifacts (".") use ("share");
+    end Install;
+
+end Template;

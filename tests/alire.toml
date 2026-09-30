@@ -1,0 +1,31 @@
+name = "template_tests"
+description = "Tests for template"
+version = "0.1.0-dev"
+
+authors = ["Napolitain"]
+maintainers-logins = ["Napolitain"]
+licenses = "MIT"
+
+executables = ["tests_main"]
+
+[[depends-on]]
+template = "*"
+aunit = "^26.0.0"
+
+[[pins]]
+template = { path = ".." }
+
+[build-switches]
+"*".ada_version = "Ada2022"
+"*".compile_checks = "errors"
+"*".style_checks = [
+    "-gnaty4", "-gnatya", "-gnatyA", "-gnatyB", "-gnatyb", "-gnatyc", "-gnaty-d", "-gnatye",
+    "-gnatyf", "-gnatyh", "-gnatyi", "-gnatyI", "-gnatyk", "-gnatyl", "-gnatyM100", "-gnatyn",
+    "-gnatyO", "-gnatyp", "-gnatyr", "-gnatyS", "-gnatyt", "-gnatyu", "-gnatyx",
+]
+
+[[depends-on]]
+gnatformat_bin = "^26.0.0"
+
+[[depends-on]]
+gnatcov = "^26.2.1"

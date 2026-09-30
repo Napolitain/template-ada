@@ -1,0 +1,54 @@
+minimum_prek_version = "0.5.0"
+default_install_hook_types = ["pre-commit", "pre-push"]
+
+[[repos]]
+repo = "builtin"
+hooks = [
+    { id = "trailing-whitespace" },
+    { id = "end-of-file-fixer" },
+    { id = "mixed-line-ending", args = ["--fix=lf"] },
+    { id = "fix-byte-order-marker" },
+    { id = "pretty-format-json", args = ["--autofix", "--no-sort-keys", "--indent", "4"] },
+    { id = "check-toml" },
+    { id = "check-yaml" },
+    { id = "check-merge-conflict" },
+    { id = "check-added-large-files" },
+    { id = "detect-private-key" },
+]
+
+[[repos]]
+repo = "local"
+
+# pre-commit: fixers first (by priority), then checks
+
+[[repos.hooks]]
+id = "gnatformat"
+name = "gnatformat"
+language = "system"
+entry = "sh -c 'cd tests && alr -q exec -- gnatformat -P ../template.gpr && alr -q exec -- gnatformat --no-subprojects -P template_tests.gpr'"
+files = '\.(ads|adb|gpr)$'
+pass_filenames = false
+stages = ["pre-commit"]
+priority = 10
+
+[[repos.hooks]]
+id = "alr-build"
+name = "alr build"
+language = "system"
+entry = "alr -n -q build"
+files = '\.(ads|adb|gpr|toml)$'
+pass_filenames = false
+stages = ["pre-commit"]
+priority = 20
+
+# pre-push
+
+[[repos.hooks]]
+id = "alr-test"
+name = "alr test"
+language = "system"
+entry = "alr -n -q test"
+files = '\.(ads|adb|gpr|toml)$'
+pass_filenames = false
+stages = ["pre-push"]
+priority = 10
