@@ -29,3 +29,10 @@ gnatformat_bin = "^26.0.0"
 
 [[depends-on]]
 gnatcov = "^26.2.1"
+
+[[depends-on]]
+gnatprove = "^16.1.0"
+
+# Build the crate under test with runtime contract checks (-gnata).
+[build-profiles]
+template = "development"

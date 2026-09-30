@@ -18,6 +18,7 @@ command = ["alr", "run"]
 [build-switches]
 "*".ada_version = "Ada2022"
 development.compile_checks = "errors"
+development.contracts = "yes"
 development.optimization = ["-Og", "-march=native"]
 validation.optimization = ["-O2", "-march=native"]
 release.optimization = ["-O3", "-march=native", "-flto=auto"]

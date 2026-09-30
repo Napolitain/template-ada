@@ -22,6 +22,10 @@ project Template is
         end case;
     end Linker;
 
+    package Prove is
+        for Proof_Switches ("Ada") use ("--level=2", "--checks-as-errors=on", "--warnings=error");
+    end Prove;
+
     package Format is
         for Width ("Ada") use "100";
         for Indentation ("Ada") use "4";

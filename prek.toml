@@ -52,3 +52,13 @@ files = '\.(ads|adb|gpr|toml)$'
 pass_filenames = false
 stages = ["pre-push"]
 priority = 10
+
+[[repos.hooks]]
+id = "gnatprove"
+name = "gnatprove (SPARK)"
+language = "system"
+entry = "sh -c 'alr -n -q build --stop-after=generation && cd tests && alr -n -q build --stop-after=generation && alr -q exec -- gnatprove -P ../template.gpr'"
+files = '\.(ads|adb|gpr|toml)$'
+pass_filenames = false
+stages = ["pre-push"]
+priority = 20
