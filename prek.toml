@@ -54,6 +54,16 @@ stages = ["pre-push"]
 priority = 10
 
 [[repos.hooks]]
+id = "coverage"
+name = "gnatcov coverage (min 80%)"
+language = "system"
+entry = "tests/coverage.sh"
+files = '\.(ads|adb|gpr|toml)$'
+pass_filenames = false
+stages = ["pre-push"]
+priority = 15
+
+[[repos.hooks]]
 id = "gnatprove"
 name = "gnatprove (SPARK)"
 language = "system"
