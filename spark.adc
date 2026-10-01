@@ -1,0 +1,2 @@
+--  Every unit in src/ is SPARK: gnatprove analyses all of it, nothing is skipped silently.
+pragma SPARK_Mode (On);

@@ -9,6 +9,7 @@ project Template is
 
     package Compiler is
         for Default_Switches ("Ada") use Template_Config.Ada_Compiler_Switches;
+        for Local_Configuration_Pragmas use "spark.adc";
     end Compiler;
 
     package Binder is

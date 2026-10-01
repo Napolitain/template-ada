@@ -32,6 +32,15 @@ stages = ["pre-commit"]
 priority = 10
 
 [[repos.hooks]]
+id = "spark-only"
+name = "no SPARK_Mode Off in src/"
+language = "system"
+entry = '''sh -c '! grep -niE "SPARK_Mode[[:space:]]*(\(|=>)[[:space:]]*Off" "$@" || { echo "SPARK_Mode Off is not allowed: everything in src/ must be proved"; exit 1; }' --'''
+files = '^src/.*\.ad[sb]$'
+stages = ["pre-commit"]
+priority = 20
+
+[[repos.hooks]]
 id = "alr-build"
 name = "alr build"
 language = "system"
