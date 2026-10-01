@@ -1,2 +1,6 @@
 --  Every unit in src/ is SPARK: gnatprove analyses all of it, nothing is skipped silently.
 pragma SPARK_Mode (On);
+
+--  No opting out: any SPARK_Mode pragma or aspect in src/ (including Off) is a compile error.
+pragma Restrictions (No_Use_Of_Pragma => SPARK_Mode);
+pragma Restrictions (No_Specification_Of_Aspect => SPARK_Mode);

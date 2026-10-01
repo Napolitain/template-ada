@@ -6,7 +6,7 @@ authors = ["Napolitain"]
 maintainers-logins = ["Napolitain"]
 licenses = "MIT"
 
-executables = ["tests_main"]
+executables = ["tests_main", "coverage"]
 
 [[depends-on]]
 template = "*"

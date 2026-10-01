@@ -13,7 +13,7 @@ executables = ["template"]
 [[actions]]
 type = "test"
 directory = "tests"
-command = ["alr", "run"]
+command = ["alr", "run", "tests_main"]
 
 [build-switches]
 "*".ada_version = "Ada2022"

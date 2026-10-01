@@ -19,33 +19,49 @@ hooks = [
 [[repos]]
 repo = "local"
 
+# Every hook is a single alr command; tools (gnatformat, gnatprove, gnatcov) come from tests/alire.toml.
+# alr exec does not generate config/*.gpr, so alr-generate runs first in both stages.
+
+[[repos.hooks]]
+id = "alr-generate"
+name = "alr generate config"
+language = "system"
+entry = "alr -n -q -C tests build --stop-after=generation"
+files = '\.(ads|adb|adc|gpr|toml)$'
+pass_filenames = false
+stages = ["pre-commit", "pre-push"]
+priority = 0
+
 # pre-commit: fixers first (by priority), then checks
 
 [[repos.hooks]]
 id = "gnatformat"
-name = "gnatformat"
+name = "gnatformat (src)"
 language = "system"
-entry = "sh -c 'alr -n -q build --stop-after=generation && cd tests && alr -n -q build --stop-after=generation && alr -q exec -- gnatformat -P ../template.gpr && alr -q exec -- gnatformat --no-subprojects -P template_tests.gpr'"
+entry = "alr -n -q -C tests exec -- gnatformat -P ../template.gpr"
 files = '\.(ads|adb|gpr)$'
 pass_filenames = false
 stages = ["pre-commit"]
 priority = 10
 
 [[repos.hooks]]
-id = "spark-only"
-name = "no SPARK_Mode Off in src/"
+id = "gnatformat-tests"
+name = "gnatformat (tests)"
 language = "system"
-entry = '''sh -c '! grep -niE "SPARK_Mode[[:space:]]*(\(|=>)[[:space:]]*Off" "$@" || { echo "SPARK_Mode Off is not allowed: everything in src/ must be proved"; exit 1; }' --'''
-files = '^src/.*\.ad[sb]$'
+entry = "alr -n -q -C tests exec -- gnatformat --no-subprojects -P template_tests.gpr"
+files = '\.(ads|adb|gpr)$'
+pass_filenames = false
 stages = ["pre-commit"]
-priority = 20
+priority = 10
+
+# Also enforces SPARK: spark.adc rejects any SPARK_Mode pragma/aspect (no opting out) in src/.
 
 [[repos.hooks]]
 id = "alr-build"
 name = "alr build"
 language = "system"
 entry = "alr -n -q build"
-files = '\.(ads|adb|gpr|toml)$'
+files = '\.(ads|adb|adc|gpr|toml)$'
 pass_filenames = false
 stages = ["pre-commit"]
 priority = 20
@@ -57,7 +73,7 @@ id = "alr-test"
 name = "alr test"
 language = "system"
 entry = "alr -n -q test"
-files = '\.(ads|adb|gpr|toml)$'
+files = '\.(ads|adb|adc|gpr|toml)$'
 pass_filenames = false
 stages = ["pre-push"]
 priority = 10
@@ -66,8 +82,8 @@ priority = 10
 id = "coverage"
 name = "gnatcov coverage (min 80%)"
 language = "system"
-entry = "tests/coverage.sh"
-files = '\.(ads|adb|gpr|toml)$'
+entry = "alr -n -q -C tests run coverage --args=80"
+files = '\.(ads|adb|adc|gpr|toml)$'
 pass_filenames = false
 stages = ["pre-push"]
 priority = 15
@@ -76,8 +92,8 @@ priority = 15
 id = "gnatprove"
 name = "gnatprove (SPARK)"
 language = "system"
-entry = "sh -c 'alr -n -q build --stop-after=generation && cd tests && alr -n -q build --stop-after=generation && alr -q exec -- gnatprove -P ../template.gpr'"
-files = '\.(ads|adb|gpr|toml)$'
+entry = "alr -n -q -C tests exec -- gnatprove -P ../template.gpr"
+files = '\.(ads|adb|adc|gpr|toml)$'
 pass_filenames = false
 stages = ["pre-push"]
 priority = 20

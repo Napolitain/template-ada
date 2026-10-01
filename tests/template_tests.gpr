@@ -5,7 +5,7 @@ project Template_Tests is
     for Object_Dir use "obj/" & Template_Tests_Config.Build_Profile;
     for Create_Missing_Dirs use "True";
     for Exec_Dir use "bin";
-    for Main use ("tests_main.adb");
+    for Main use ("tests_main.adb", "coverage.adb");
 
     package Compiler is
         for Default_Switches ("Ada") use Template_Tests_Config.Ada_Compiler_Switches;

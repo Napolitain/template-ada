@@ -1,6 +1,4 @@
-package body Greet
-    with SPARK_Mode
-is
+package body Greet is
 
     function Message (Name : String) return String is
     begin

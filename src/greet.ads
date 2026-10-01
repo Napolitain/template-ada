@@ -1,6 +1,4 @@
-package Greet
-    with SPARK_Mode
-is
+package Greet is
 
     Prefix : constant String := "Hello, ";
     Suffix : constant String := "!";
