@@ -49,3 +49,47 @@ The shell supports x86_64 Linux. Its `alr` wrapper supplies an FHS environment
 for downloaded GNAT/SPARK binaries, glibc headers/libraries, and GMP. This needs
 unprivileged user namespaces; no system-wide `nix-ld` configuration is required.
 Alire still manages the compiler and the dependencies in `alire.toml`.
+
+## Profile-guided optimization
+
+Optional instrumentation PGO uses GCC-based GNAT (`gnat_native=16.1.0` and
+`gprbuild=26.0.1`, as in CI), its profiling runtime, and the existing release/LTO
+settings. Alire forwards arguments after `--` to GPRbuild. From the project root:
+
+```sh
+alr build --release -- -f --subdirs=pgo-baseline
+rm -rf obj/pgo-data
+mkdir -p obj/pgo-data
+alr build --release -- -f --subdirs=pgo \
+    -cargs "-fprofile-generate=$PWD/obj/pgo-data" \
+    -largs "-fprofile-generate=$PWD/obj/pgo-data"
+./bin/pgo/template
+# Repeat the preceding command with representative application workloads.
+alr build --release -- -f --subdirs=pgo \
+    -cargs "-fprofile-use=$PWD/obj/pgo-data" -Werror=missing-profile -Werror=coverage-mismatch \
+    -largs "-fprofile-use=$PWD/obj/pgo-data"
+./bin/pgo/template
+hyperfine --warmup 3 './bin/pgo-baseline/template' './bin/pgo/template'
+```
+
+The greeting is only a smoke workload. Replace it with your application's typical
+inputs and execution paths, let every training run exit normally, and evaluate on
+a separate representative workload. Check correctness again and compare repeated
+baseline/optimized release runs; `hyperfine` is an optional separate install.
+Run the binaries directly: `alr run` can rebuild without your profiling switches.
+
+Generation and use deliberately share the same `--subdirs=pgo` object/executable
+paths: GCC keys `.gcda` files to object paths. `-f` forces recompilation between
+phases. Repeated compatible runs accumulate counts without an LLVM merge step.
+Missing or mismatched profiles fail the use build. Keep source, GNAT, target,
+flags and dependencies fixed; clear `obj/pgo-data` and retrain after changes.
+Normal objects/binaries remain outside these subdirectories; ordinary builds,
+SPARK proofs and GNATcoverage do not need profiles. GNATcoverage traces are not
+PGO data, and SPARK proofs do not measure the optimized binary's performance.
+
+See GCC's [instrumentation options](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html)
+and [profile-use options](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html).
+GCC AutoFDO (`-fauto-profile`) additionally needs a compiler configured to support
+it and a compatible sampling converter; it is not a supplied/validated GNAT
+workflow here. Clang/LLVM Propeller instructions do not apply to this GCC-based
+GNAT setup. No layout/relinking workflow is provided.
