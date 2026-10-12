@@ -22,7 +22,7 @@ prek run -a --hook-stage pre-push    # pre-push hooks
 - pre-commit: `gnatformat`, `alr build`
 - pre-push: `alr test`, `alr -C tests run coverage` (coverage gate), `gnatprove`
 
-No shell scripts: every hook is one `alr` command. `alr exec` does not generate `config/*.gpr`, so an `alr-generate` hook runs first.
+Every hook is one `alr` command. `alr exec` does not generate `config/*.gpr`, so an `alr-generate` hook runs first.
 
 Opinionated defaults (`alire.toml`): Ada 2022, warnings as errors in development, GNAT style checks with 4-space indentation and 100-column lines (GNATformat uses the same, see `package Format` in the `.gpr` files), `-march=native` in every profile.
 
@@ -52,44 +52,33 @@ Alire still manages the compiler and the dependencies in `alire.toml`.
 
 ## Profile-guided optimization
 
-Optional instrumentation PGO uses GCC-based GNAT (`gnat_native=16.1.0` and
-`gprbuild=26.0.1`, as in CI), its profiling runtime, and the existing release/LTO
-settings. Alire forwards arguments after `--` to GPRbuild. From the project root:
+Instrumentation PGO uses GCC-based GNAT (CI: `gnat_native=16.1.0`,
+`gprbuild=26.0.1`) and retains release **GCC LTO**. Create an executable
+`train.sh` that runs `"$1"` with representative inputs:
 
 ```sh
-alr build --release -- -f --subdirs=pgo-baseline
-rm -rf obj/pgo-data
-mkdir -p obj/pgo-data
-alr build --release -- -f --subdirs=pgo \
-    -cargs "-fprofile-generate=$PWD/obj/pgo-data" \
-    -largs "-fprofile-generate=$PWD/obj/pgo-data"
-./bin/pgo/template
-# Repeat the preceding command with representative application workloads.
-alr build --release -- -f --subdirs=pgo \
-    -cargs "-fprofile-use=$PWD/obj/pgo-data" -Werror=missing-profile -Werror=coverage-mismatch \
-    -largs "-fprofile-use=$PWD/obj/pgo-data"
-./bin/pgo/template
-hyperfine --warmup 3 './bin/pgo-baseline/template' './bin/pgo/template'
+./tools/perf-build baseline
+./tools/perf-build pgo -- ./train.sh
+# Smoke test only: ./tools/perf-build pgo -- env
+hyperfine --warmup 3 './evaluate.sh ./bin/pgo-baseline/template' \
+    './evaluate.sh ./bin/pgo/template'
 ```
 
-The greeting is only a smoke workload. Replace it with your application's typical
-inputs and execution paths, let every training run exit normally, and evaluate on
-a separate representative workload. Check correctness again and compare repeated
-baseline/optimized release runs; `hyperfine` is an optional separate install.
-Run the binaries directly: `alr run` can rebuild without your profiling switches.
+The helper instruments, trains, and rebuilds using GCC counters. Outputs are
+`bin/pgo-baseline/template` and `bin/pgo/template`; set `PERF_BINARY` if you
+rename the executable. Training must exit normally to flush counters. Run binaries
+directly: `alr run` can rebuild without profiling switches.
 
-Generation and use deliberately share the same `--subdirs=pgo` object/executable
-paths: GCC keys `.gcda` files to object paths. `-f` forces recompilation between
-phases. Repeated compatible runs accumulate counts without an LLVM merge step.
-Missing or mismatched profiles fail the use build. Keep source, GNAT, target,
-flags and dependencies fixed; clear `obj/pgo-data` and retrain after changes.
-Normal objects/binaries remain outside these subdirectories; ordinary builds,
-SPARK proofs and GNATcoverage do not need profiles. GNATcoverage traces are not
-PGO data, and SPARK proofs do not measure the optimized binary's performance.
+Each run gets fresh profiles/input records under `obj/pgo-data/`. Generation
+and use deliberately share object paths, with forced recompilation between phases;
+missing/mismatched profiles fail the build. Ordinary builds and SPARK/GNATcoverage
+remain independent. Run profiling builds serially; retrain after source, GNAT,
+flags or workload changes. GCC's `-flto=auto` controls LTO parallelism, not ThinLTO.
 
-See GCC's [instrumentation options](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html)
-and [profile-use options](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html).
-GCC AutoFDO (`-fauto-profile`) additionally needs a compiler configured to support
-it and a compatible sampling converter; it is not a supplied/validated GNAT
-workflow here. Clang/LLVM Propeller instructions do not apply to this GCC-based
-GNAT setup. No layout/relinking workflow is provided.
+Check the optimized executable's correctness, then compare separate evaluation
+inputs with repeated runs, including latency, memory and size. Keep the baseline
+if gains are absent or within noise; the greeting implies no application speedup.
+
+See [GCC profile options](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html).
+GCC AutoFDO needs a compatible compiler and sampling converter; this helper offers
+instrumentation PGO only. LLVM Propeller does not apply to this GCC-based GNAT setup.
