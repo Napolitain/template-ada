@@ -93,22 +93,19 @@ body. Use the type matching the change: `feat`, `fix`, `test`, `docs`,
 `refactor`, `perf`, `build`, `ci`, `chore` or `revert`. The body is mandatory:
 commit descriptions are the durable audit trail and are used for internal logging.
 
-Use this structure:
+Every commit body and pull request description must use the following four
+labels exactly as written, in this order. Start each section on a new line and
+fill it with details specific to the change.
 
 ```text
-<type>[optional scope]: <concise imperative subject>
+What: Describe what changed in this commit or pull request.
 
-Task:
-- <what the user requested and what changed>
+Why: Explain the problem or need that motivated the change.
 
-Why:
-- <why this matters, what risk it reduces or what workflow it enables>
+How: Explain how the change was implemented.
 
-Approach:
-- <how the work was done and why it was preferred over reasonable alternatives>
-
-Verification:
-- <exact commands and results, or explicitly accepted verification limitations>
+Result: State the observed outcome. Include before-and-after behavior or
+verification results where relevant, and identify anything still unverified.
 ```
 
 Use specific evidence such as affected options, issue numbers and generated files.
